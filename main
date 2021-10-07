@@ -1,0 +1,243 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BlackJack
+{
+   
+    class Program
+    {
+        static string[] color = new string[4] { "Spade", "Heart", "Diamond", "Club" };
+        //----------------------------------- 我是分隔線--------------------------------
+        /* Use Clean function to initialize all matric. */
+        private static void Clean(ref int[] num1, ref int[] num2, ref int[] col1, ref int[] col2)
+        {
+            Array.Resize(ref num1, 1);
+            Array.Resize(ref num2, 1);
+            Array.Resize(ref col1, 1);
+            Array.Resize(ref col2, 1);
+            num1[0] = 0; num2[0] = 0; col1[0] = 0; col2[0] = 0;
+        }
+        //----------------------------------- 我是分隔線--------------------------------
+        private static void Random(int length,ref int[] cardCol1,ref int[] cardNum1, ref int[] cardCol2, ref int[] cardNum2)
+        {
+            if (length == 1) /* At first,only need to create a random card. */
+            {
+                Random rand = new Random();
+                cardCol1[0]=rand.Next(0, 4);
+                cardNum1[0] = rand.Next(1, 14);
+            }
+            else /* 一開始設置陣列長度為1，之後每次都用Resize加1並且確認每一局的手牌沒有拿到重覆，card1指的是自己，card2指的是別人 */
+            {
+                Array.Resize(ref cardCol1, cardCol1.Length + 1);
+                Array.Resize(ref cardNum1, cardNum1.Length + 1);
+                Random rand = new Random();
+                int boo;//用boo去記有沒有抽到重覆花色或數字
+                do
+                {
+                    boo = 0;
+                    int ranCol = rand.Next(0,4);
+                    int ranNum = rand.Next(1,14);
+                    for (int i = 0; i < cardNum1.Length - 1; i++) /* To ensure the card we get is not conflict. */
+                        if (cardCol1[i] == ranCol&& cardNum1[i] == ranNum) boo = 1;
+                    for(int i=0;i< cardNum2.Length; i++)   /* To ensure the card enemy get is not conflict. */
+                        if (cardCol2[i] == ranCol && cardNum2[i] == ranNum) boo = 1;
+                    if (boo == 0)  // It means the random card don't repeat  
+                    {
+                        cardCol1[cardCol1.Length - 1] = ranCol;
+                        cardNum1[cardNum1.Length - 1] = ranNum;
+                        break;
+                    }
+                } while (boo == 1);
+            } 
+        }
+        //----------------------------------- 我是分隔線--------------------------------
+        private static int  Add(int sum,int[] num,int length)
+        {
+            sum = 0;
+            int aceNum=0;//用aceNum去記抽到幾次ace
+            for(int i = 0; i < length; i++)
+            {
+                if (num[i] >= 10) sum += 10;      //10.11.12.13->10
+                else sum += num[i];
+                if (num[i] == 1) aceNum++;
+            }
+            if (aceNum >= 1&&sum+10<=21) sum += 10;  //Because we most let Ace to be 11 one time. 
+            return sum;
+        }
+        //----------------------------------- 我是分隔線--------------------------------
+        private static void Print(int player,int[] cardCol,int[] cardNum ,int length)
+        {
+            for(int i=0; i < length; i++)
+            {
+                if (i == 0) Console.Write("玩家{0}手牌 : {1} {2} , ", player, color[cardCol[i]],cardNum[i]);
+                else if(i==length-1) Console.WriteLine("{0} {1}", color[cardCol[i]],cardNum[i]);
+                else Console.Write("{0} {1} , ", color[cardCol[i]], cardNum[i]);
+            }
+        }
+        //----------------------------------- 我是分隔線--------------------------------
+        static void Main(string[] args)
+        {
+            try
+            {
+                int money1, money2;
+                Console.Write("玩家1初始金錢:");
+                money1 = int.Parse(Console.ReadLine());
+                Console.Write("玩家2初始金錢:");
+                money2 = int.Parse(Console.ReadLine());
+                Console.WriteLine("------------------------------------"); 
+                int[] cardCol1 = new int[1];
+                int[] cardNum1 = new int[1];
+                int[] cardCol2 = new int[1];
+                int[] cardNum2 = new int[1];
+                start:
+                int sum1=0, sum2=0;
+                /*Random of player1*/
+                Random(1,ref cardCol1,ref cardNum1,ref cardCol2,ref cardNum2);
+                Random(2,ref cardCol1,ref cardNum1, ref cardCol2, ref cardNum2);
+                Print(1, cardCol1,cardNum1, cardNum1.Length);
+                for (int i = 0; i < 2; i++) sum1=Add(sum1,cardNum1,cardNum1.Length);
+                Console.WriteLine();
+                Console.WriteLine("玩家1目前點數:{0}", sum1);
+                Console.WriteLine("玩家1目前金錢:{0}", money1);
+                input1:
+                Console.Write("請輸入下注金額:");
+                int bet1 = int.Parse(Console.ReadLine());
+                if (bet1 > money1)
+                {
+                    Console.WriteLine("金額不足，請重新輸入!");
+                    goto input1;
+                }
+                if (bet1 == 0)
+                {
+                    Console.WriteLine("金額不能為零，請重新輸入!");
+                    goto input1;
+                }
+                Console.WriteLine();
+                /*Random of player2*/
+                Random(1, ref cardCol2,ref  cardNum2, ref cardCol1, ref cardNum1);
+                Random(2, ref cardCol2, ref cardNum2, ref cardCol1, ref cardNum1);
+                Print(2, cardCol2, cardNum2, cardNum2.Length);
+                for (int i = 0; i < 2; i++) sum2 = Add(sum2, cardNum2,cardNum2.Length);
+                Console.WriteLine("玩家2目前點數:{0}", sum2);
+                Console.WriteLine("玩家2目前金錢:{0}", money2);
+                input2:
+                Console.Write("請輸入下注金額:");
+                int bet2 = int.Parse(Console.ReadLine());
+                if (bet2 > money2)
+                {
+                    Console.WriteLine("金額不足，請重新輸入!");
+                    goto input2;
+                }
+                if (bet2 == 0)
+                {
+                    Console.WriteLine("金額不能為零，請重新輸入!");
+                    goto input2;
+                }
+                Console.WriteLine();
+                /*Action */
+                while (sum1 <= 21 && sum2 <= 21)
+                {
+                    String enter1=" ", enter2=" ";
+                    while (sum1<=21)
+                    {
+                        Console.WriteLine("玩家1行動(輸入1抽1張牌,輸入P停止抽牌):");
+                        enter1 = Console.ReadLine();
+                        if (enter1 == "1")
+                        {
+                            Random(cardCol1.Length, ref cardCol1, ref cardNum1, ref cardCol2, ref cardNum2);
+                            Print(1, cardCol1, cardNum1, cardNum1.Length);
+                            sum1 = Add(sum1, cardNum1, cardNum1.Length);
+                            Console.WriteLine("玩家1目前點數:" + sum1);
+                            if (sum1 > 21)
+                            {
+                                Console.WriteLine("玩家1爆了，玩家2獲勝!");
+                                Console.WriteLine();
+                                Console.WriteLine("玩家2獲勝，獲得{0}金錢", bet1);
+                                Console.WriteLine("-----------------------------------------------------------------------");
+                                money1 -= bet1;
+                                if (money1 == 0) Console.ReadKey();//任意玩家沒錢了直接結束程式
+                                money2 += bet1;
+                                Clean(ref cardNum1,ref cardNum2, ref cardCol1,ref cardCol2);
+                                goto start;//用goto不太好，之後再想怎麼改
+                            }
+                        }
+                        else if (enter1 == "P")
+                        {
+                            Console.WriteLine("玩家1跳過，目前點數:{0}", sum1);
+                            break;
+                        }
+                    }
+                    while (sum2 <= 21)
+                    {
+                        Console.WriteLine("玩家2行動(輸入1抽1張牌,輸入P停止抽牌):");
+                        enter2 = Console.ReadLine();
+                        if (enter2 == "1")
+                        {
+                            Random(cardCol2.Length, ref cardCol2, ref cardNum2, ref cardCol1, ref cardNum1);
+                            Print(2, cardCol2, cardNum2, cardNum2.Length);
+                            sum2 = Add(sum2, cardNum2, cardNum2.Length);
+                            Console.WriteLine("玩家2目前點數:" + sum2);
+                            if (sum2 > 21)
+                            {
+                                Console.WriteLine("玩家2爆了，玩家1獲勝!");
+                                Console.WriteLine();
+                                Console.WriteLine("玩家1獲勝，獲得{0}金錢", bet2);
+                                Console.WriteLine("-----------------------------------------------------------------------"); 
+                                money2 -= bet2;
+                                if (money2 == 0) Console.ReadKey();
+                                money1 += bet2;
+                                Clean(ref cardNum1, ref cardNum2, ref cardCol1, ref cardCol2);
+                                goto start;
+                            }
+                        }
+                        else if (enter2 == "P")
+                        {
+                            Console.WriteLine("玩家2跳過，目前點數:{0}", sum2);
+                            break;
+                        }
+                    }
+                    if (enter1 == "P" && enter2 == "P")//雙方陷入僵局時狀況，計算誰的手牌既沒爆又最多
+                    {
+                        if (sum1 > sum2)
+                        {
+                            Console.WriteLine("玩家1獲勝，獲得{0}金錢", bet2);
+                            Console.WriteLine("-----------------------------------------------------------------------");
+                            money2 -= bet2;
+                            if (money2 == 0) Console.ReadKey();
+                            money1 += bet2;
+                            Clean(ref cardNum1, ref cardNum2, ref cardCol1, ref cardCol2);
+                            goto start;
+                        }
+                        else if (sum1 < sum2)
+                        {
+                            Console.WriteLine("玩家2獲勝，獲得{0}金錢", bet1);
+                            Console.WriteLine("-----------------------------------------------------------------------");
+                            money1 -= bet1;
+                            if (money1 == 0) Console.ReadKey();
+                            money2 += bet1;
+                            Clean(ref cardNum1, ref cardNum2, ref cardCol1, ref cardCol2);
+                            goto start;
+                        }
+                        else if (sum1 == sum2)
+                        {
+                            Console.WriteLine("平手!拿回各自的錢");
+                            Console.WriteLine("-----------------------------------------------------------------------");
+                            Clean(ref cardNum1, ref cardNum2, ref cardCol1, ref cardCol2);
+                            goto start;
+                        }
+                    }
+                }
+                Console.ReadKey();
+            }
+            catch (FormatException) //沒輸入整數的錯誤訊息
+            {
+                Console.WriteLine("請輸入正確格式");
+                Console.ReadKey();
+            }
+
+        }
+    }
+}
